@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>محاسبه‌گر Chula و تهویه مکانیکی</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-canvas: #f8fafc;
+            --surface-card: #ffffff;
+            --surface-field: #f1f5f9;
+            --surface-field-focus: #ffffff;
+            --border-card: rgba(226, 232, 240, 0.9);
+            --border-field: #cbd5e1;
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --primary: #0284c7;
+            --primary-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            --result-gradient: linear-gradient(135deg, #0369a1 0%, #0f172a 100%);
+            --result-text: #ffffff;
+            --card-sub-bg: rgba(255, 255, 255, 0.08);
+            --warn-bg: #fffbeb;
+            --warn-border: #f59e0b;
+            --warn-text: #92400e;
+            --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            --theme-btn-bg: #e2e8f0;
+            --theme-btn-hover: #cbd5e1;
+            --theme-btn-text: #1e293b;
+        }
+
+        [data-theme="dark"] {
+            --bg-canvas: #090d16;
+            --surface-card: #131a29;
+            --surface-field: #1b2438;
+            --surface-field-focus: #212c45;
+            --border-card: #1e293b;
+            --border-field: #2d3b55;
+            --text-heading: #f8fafc;
+            --text-body: #cbd5e1;
+            --text-muted: #94a3b8;
+            --primary: #38bdf8;
+            --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+            --result-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --result-text: #f8fafc;
+            --card-sub-bg: rgba(255, 255, 255, 0.04);
+            --warn-bg: rgba(245, 158, 11, 0.08);
+            --warn-border: #d97706;
+            --warn-text: #fcd34d;
+            --shadow-card: 0 15px 30px -10px rgba(0, 0, 0, 0.4);
+            --theme-btn-bg: #1e293b;
+            --theme-btn-hover: #29354d;
+            --theme-btn-text: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Vazirmatn', -apple-system, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-body);
+            margin: 0;
+            padding: 16px 12px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 460px;
+            background: var(--surface-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 22px 20px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        .brand-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+        }
+
+        .brand-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .theme-toggle-btn {
+            background: var(--theme-btn-bg);
+            color: var(--theme-btn-text);
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+
+        .input-control {
+            width: 100%;
+            height: 46px;
+            padding: 0 14px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-field);
+            background: var(--surface-field);
+            color: var(--text-heading);
+            font-family: 'Vazirmatn', 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-control:focus {
+            border-color: var(--primary);
+            background: var(--surface-field-focus);
+        }
+
+        .gender-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .gender-btn {
+            height: 44px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-field);
+            background: var(--surface-field);
+            color: var(--text-heading);
+            font-family: 'Vazirmatn', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .gender-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        input[type="number"].input-control {
+            direction: ltr;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .result-panel {
+            display: none;
+            margin-top: 20px;
+            background: var(--result-gradient);
+            border-radius: 16px;
+            padding: 18px;
+            color: var(--result-text);
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--card-sub-bg);
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .res-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .res-val {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            direction: ltr;
+        }
+
+        .clinical-warning {
+            margin-top: 18px;
+            padding: 12px 14px;
+            background: var(--warn-bg);
+            border-right: 3.5px solid var(--warn-border);
+            border-radius: 10px;
+            color: var(--warn-text);
+            font-size: 0.77rem;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        .clinical-warning strong {
+            display: block;
+            margin-bottom: 2px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="top-bar">
+        <div class="brand-wrapper">
+            <div class="brand-icon">📏</div>
+            <h1 class="brand-title">عمق ETT (چولا) و حجم جاری</h1>
+        </div>
+        <button type="button" class="theme-toggle-btn" id="themeToggle" aria-label="تغییر تم">
+            <svg id="themeIcon" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <div class="form-group">
+        <label>جنسیت بیمار:</label>
+        <div class="gender-options">
+            <button type="button" class="gender-btn active" id="btnMale" onclick="setGender('male')">👨 مرد</button>
+            <button type="button" class="gender-btn" id="btnFemale" onclick="setGender('female')">👩 زن</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="heightCm">قد بیمار (سانتی‌متر):</label>
+        <input type="number" id="heightCm" class="input-control" placeholder="مثال: 175" oninput="runCalc()" step="any" min="100" max="250">
+    </div>
+
+    <div class="result-panel" id="resBox">
+        <div class="result-row">
+            <span class="res-label">عمق لوله تراشه از لب (فرمول Chula):</span>
+            <span class="res-val" id="resDepth">0 cm</span>
+        </div>
+        <div class="result-row">
+            <span class="res-label">وزن ایده‌آل بدن (IBW):</span>
+            <span class="res-val" id="resIbw">0 kg</span>
+        </div>
+        <div class="result-row">
+            <span class="res-label">حجم جاری تنفسی (6-8 mL/kg):</span>
+            <span class="res-val" id="resVt">0 - 0 mL</span>
+        </div>
+    </div>
+
+    <div class="clinical-warning">
+        <strong>📚 مستندات بالینی فرمول چولا (Chula):</strong>
+        فرمول Chula با بررسی برونکوسکوپیک اعتبارپذیری شده است (فاصله نوک لوله تا کارینا بین ۱.۹ تا ۷.۵ سانتی‌متر و کاف همیشه بالاتر از ۱.۹ سانتی‌متر زیر تارهای صوتی قرار می‌گیرد). جهت تنظیم ونتیلاتور بر اساس تهویه محافظتی ریه (LTVV)، حجم جاری الزماً بر مبنای <b>IBW</b> تنظیم می‌شود.
+    </div>
+</div>
+
+<script>
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
+
+    let currentGender = 'male';
+
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const htmlEl = document.documentElement;
+
+    const sunIcon = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+    const moonIcon = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+
+    function setTheme(theme) {
+        if (theme === 'dark') {
+            htmlEl.setAttribute('data-theme', 'dark');
+            themeIcon.innerHTML = sunIcon;
+            localStorage.setItem('app_theme', 'dark');
+        } else {
+            htmlEl.removeAttribute('data-theme');
+            themeIcon.innerHTML = moonIcon;
+            localStorage.setItem('app_theme', 'light');
+        }
+    }
+
+    const savedTheme = localStorage.getItem('app_theme');
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.colorScheme === 'dark') {
+        setTheme('dark');
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        const isDark = htmlEl.getAttribute('data-theme') === 'dark';
+        setTheme(isDark ? 'light' : 'dark');
+    });
+
+    function setGender(g) {
+        currentGender = g;
+        document.getElementById('btnMale').classList.toggle('active', g === 'male');
+        document.getElementById('btnFemale').classList.toggle('active', g === 'female');
+        runCalc();
+    }
+
+    function runCalc() {
+        const height = parseFloat(document.getElementById('heightCm').value);
+        const resBox = document.getElementById('resBox');
+
+        if (height && height >= 100) {
+            // ۱. فرمول Chula برای عمق لوله تراشه از سطح لب
+            const depth = (0.1 * height) + 4;
+
+            // ۲. فرمول IBW (تبدیل قد سانتی‌متر به اینچ: cm / 2.54)
+            const heightInches = height / 2.54;
+            const diffInches = Math.max(0, heightInches - 60);
+
+            let ibw = 0;
+            if (currentGender === 'male') {
+                ibw = 50 + (2.3 * diffInches);
+            } else {
+                ibw = 45.5 + (2.3 * diffInches);
+            }
+
+            // ۳. حجم جاری هدف (6 تا 8 میلی‌لیتر بر کیلوگرم IBW)
+            const vtMin = Math.round(ibw * 6);
+            const vtMax = Math.round(ibw * 8);
+
+            document.getElementById('resDepth').innerText = depth.toFixed(1) + " cm";
+            document.getElementById('resIbw').innerText = ibw.toFixed(1) + " kg";
+            document.getElementById('resVt').innerText = `${vtMin} - ${vtMax} mL`;
+
+            resBox.style.display = 'block';
+        } else {
+            resBox.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
